@@ -1,0 +1,8 @@
+find_package(Eigen3 QUIET)
+if(Eigen3_FOUND)
+    message(STATUS "Eigen3 found. Building Eigen dependent examples.")
+    add_subdirectory(hacky_toolkit)
+    add_subdirectory(line2d)
+else()
+    message(STATUS "Eigen3 not found. Eigen dependent examples skipped.")
+endif()

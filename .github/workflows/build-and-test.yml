@@ -1,0 +1,40 @@
+name: build-and-test
+
+on: [push]
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Add ./install to $PATH
+        shell: bash
+        run: |
+          echo "${GITHUB_WORKSPACE//'\'/'/'}/install" >> $GITHUB_PATH
+          echo "${GITHUB_WORKSPACE//'\'/'/'}/install/bin" >> $GITHUB_PATH
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Clone Eigen
+        working-directory: ${{ github.workspace }}
+        shell: bash
+        run: |
+          git clone https://gitlab.com/libeigen/eigen.git --branch 3.3.9 --depth 1 && cd eigen
+          git switch -c 3.3.9
+
+      - name: CMake Eigen
+        uses: Jaybro/action-cmake
+        with:
+          cmake-source-dir: ${{ github.workspace }}/eigen
+          cmake-install: true
+
+      - name: CMake HackySAC
+        uses: Jaybro/action-cmake
+        with:
+          cmake-install: false
+          cmake-ctest: false
