@@ -28,13 +28,13 @@ jobs:
           git switch -c 3.3.9
 
       - name: CMake Eigen
-        uses: Jaybro/action-cmake
+        uses: Jaybro/action-cmake@v1
         with:
           cmake-source-dir: ${{ github.workspace }}/eigen
           cmake-install: true
 
       - name: CMake HackySAC
-        uses: Jaybro/action-cmake
+        uses: Jaybro/action-cmake@v1
         with:
           cmake-install: false
           cmake-ctest: false
