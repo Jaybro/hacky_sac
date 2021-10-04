@@ -27,7 +27,8 @@ class FixedIterationAdapter {
   inline constexpr std::size_t Iterations() const { return iterations_; }
   //! \brief Returns the iterations set during the construction of the
   //! FixedIterationAdapter. This means the input argument is ignored.
-  inline constexpr std::size_t Iterations(std::size_t n_inliers) const {
+  inline constexpr std::size_t Iterations(
+      [[maybe_unused]] std::size_t n_inliers) const {
     return iterations_;
   }
 
@@ -191,8 +192,8 @@ EstimateModelResult<Model> EstimateModel(
     current.model = f_model_estimator(current.samples);
     current.n_inliers = 0;
 
-    for (std::size_t i = 0; i < n_datums; ++i) {
-      if ((current.mask[i] = f_sample_tester(current.model, i))) {
+    for (std::size_t j = 0; j < n_datums; ++j) {
+      if ((current.mask[j] = f_sample_tester(current.model, j))) {
         ++current.n_inliers;
       }
     }
