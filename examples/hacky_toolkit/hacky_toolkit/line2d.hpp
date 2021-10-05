@@ -1,6 +1,12 @@
-#include <Eigen/Eigen>
+#pragma once
+
 #include <random>
 #include <vector>
+
+#include "plane.hpp"
+
+using Line2d = Plane2d;
+using Line2f = Plane2f;
 
 Eigen::Vector3d CalculateLine(
     Eigen::Vector2d const& a, Eigen::Vector2d const& b) {
