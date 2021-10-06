@@ -8,19 +8,6 @@
 using Line2d = Plane2d;
 using Line2f = Plane2f;
 
-Eigen::Vector3d CalculateLine(
-    Eigen::Vector2d const& a, Eigen::Vector2d const& b) {
-  Eigen::Vector2d v = (b - a).normalized();
-  Eigen::Vector2d n(-v.y(), v.x());
-  double d = n.dot(a);
-
-  return {n.x(), n.y(), -d};
-
-  // Eigen::Vector3d l = a.homogeneous().cross(b.homogeneous());
-  // l /= l.head<2>().norm();
-  // return l;
-}
-
 bool TestPointOnLine(
     Eigen::Vector3d const& l, Eigen::Vector2d const& p, double threshold) {
   return std::abs(l.dot(p.homogeneous())) < threshold;

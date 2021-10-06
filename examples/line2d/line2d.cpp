@@ -10,7 +10,7 @@ int main() {
 
   auto f_model_estimator =
       [&dataset](std::vector<std::size_t> const& samples) -> Eigen::Vector3d {
-    return CalculateLine(dataset[samples[0]], dataset[samples[1]]);
+    return Plane2d(dataset[samples[0]], dataset[samples[1]]).a();
   };
 
   auto f_sample_tester = [&dataset, &threshold](

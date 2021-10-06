@@ -4,20 +4,24 @@
 
 //! \brief This class represents a plane (or hyperplane). The dimension argument
 //! equals that of its ambient space. I.e., a Plane<float, 2> is a line in a 2d
-//! space.
+//! space. A plane is represented by a vector of Dim + 1 parameters that can be
+//! used to obtain the general form of the plane equation: normal.dot(x) + d = 0
 template <typename Scalar_, std::size_t Dim_>
 class Plane {
+ private:
+  using VectorType = Eigen::Matrix<Scalar_, Dim_ + 1, 1>;
+
  public:
   template <typename Derived>
   inline Plane(Eigen::MatrixBase<Derived> const& p) {
-    p_ = p;
+    a_ = p;
     Normalize();
   }
 
   template <typename Derived>
-  inline Plane(Eigen::MatrixBase<Derived> const& v, Scalar_ d) {
-    p_.template head<Dim_>() = v;
-    p_(Dim_) = d;
+  inline Plane(Eigen::MatrixBase<Derived> const& a, Scalar_ d) {
+    a_.template head<Dim_>() = a;
+    a_(Dim_) = d;
     Normalize();
   }
 
@@ -25,14 +29,15 @@ class Plane {
   inline Plane(
       Eigen::MatrixBase<Derived0> const& x,
       Eigen::MatrixBase<Derived1> const& y) {
+    static_assert(Dim_ == 2);
     static_assert(
         Derived0::SizeAtCompileTime == Dim_ ||
         Derived0::SizeAtCompileTime == Dim_ + 1);
     static_assert(Derived0::SizeAtCompileTime == Derived1::SizeAtCompileTime);
     if constexpr (Derived0::SizeAtCompileTime == Dim_) {
-      p_ = x.homogeneous().cross(y.homogeneous());
+      a_ = x.homogeneous().cross(y.homogeneous());
     } else {
-      p_ = x.cross(y);
+      a_ = x.cross(y);
     }
     Normalize();
   }
@@ -43,9 +48,9 @@ class Plane {
         Derived::SizeAtCompileTime == Dim_ ||
         Derived::SizeAtCompileTime == Dim_ + 1);
     if constexpr (Derived::SizeAtCompileTime == Dim_) {
-      return p_.dot(x.homogeneous());
+      return a_.dot(x.homogeneous());
     } else {
-      return p_.dot(x);
+      return a_.dot(x);
     }
   }
 
@@ -71,10 +76,25 @@ class Plane {
     return Distance(x) < threshold;
   }
 
- private:
-  inline void Normalize() { p_ /= p_.template head<Dim_>().norm(); }
+  auto normal() const {
+    // Eigen::VectorBlock<VectorType const, Dim_>
+    return a_.template head<Dim_>();
+  }
 
-  Eigen::Matrix<Scalar_, Dim_ + 1, 1> p_;
+  Scalar_ const& d() const {
+    // Last element.
+    return a_(Dim_);
+  }
+
+  auto const& a() const {
+    // VectorType
+    return a_;
+  }
+
+ private:
+  inline void Normalize() { a_ /= a_.template head<Dim_>().norm(); }
+
+  VectorType a_;
 };
 
 using Plane2d = Plane<double, 2>;
