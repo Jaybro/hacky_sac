@@ -21,6 +21,15 @@ TEST(PlaneTest, Construction) {
   }
 }
 
+TEST(PlaneTest, Random) {
+  double max_distance = 100.0;
+
+  Plane2d plane = Plane2d::Random(max_distance);
+
+  EXPECT_LE(std::abs(plane.d()), max_distance);
+  EXPECT_DOUBLE_EQ(1.0, plane.normal().squaredNorm());
+}
+
 TEST(PlaneTest, Tests) {
   Eigen::Vector2d a(0.0, 0.0);
   Eigen::Vector2d b(4.0, 4.0);

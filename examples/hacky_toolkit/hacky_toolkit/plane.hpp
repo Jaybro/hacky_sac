@@ -12,17 +12,15 @@ class Plane {
   using VectorType = Eigen::Matrix<Scalar_, Dim_ + 1, 1>;
 
  public:
-  template <typename Derived>
-  inline Plane(Eigen::MatrixBase<Derived> const& p) {
-    a_ = p;
-    Normalize();
-  }
+  inline Plane() = default;
 
   template <typename Derived>
-  inline Plane(Eigen::MatrixBase<Derived> const& a, Scalar_ d) {
-    a_.template head<Dim_>() = a;
+  inline Plane(Eigen::MatrixBase<Derived> const& p) : a_(p) {}
+
+  template <typename Derived>
+  inline Plane(Eigen::MatrixBase<Derived> const& normal, Scalar_ d) {
+    a_.template head<Dim_>() = normal;
     a_(Dim_) = d;
-    Normalize();
   }
 
   template <typename Derived0, typename Derived1>
@@ -76,11 +74,16 @@ class Plane {
     return Distance(x) < threshold;
   }
 
+  inline void Normalize() { a_ /= a_.template head<Dim_>().norm(); }
+
   auto normal() const {
     // Eigen::VectorBlock<VectorType const, Dim_>
     return a_.template head<Dim_>();
   }
 
+  //! \brief Signed distance from the origin to the plane in the direction of
+  //! the normal. That is, the closest point on the plane to the origin equals:
+  //! plane.normal() * plane.d()
   Scalar_ const& d() const {
     // Last element.
     return a_(Dim_);
@@ -91,9 +94,15 @@ class Plane {
     return a_;
   }
 
- private:
-  inline void Normalize() { a_ /= a_.template head<Dim_>().norm(); }
+  //! \brief Generates a Plane with a random normal at a distance somewhere in
+  //! the range of [-max_distance:max_distance].
+  static Plane Random(Scalar_ max_distance = Scalar_(1.0)) {
+    return {
+        Eigen::Matrix<Scalar_, Dim_, 1>::Random().normalized(),
+        Eigen::Matrix<Scalar_, 1, 1>::Random()(0) * max_distance};
+  }
 
+ private:
   VectorType a_;
 };
 

@@ -8,15 +8,16 @@
 using Line2d = Plane2d;
 using Line2f = Plane2f;
 
-bool TestPointOnLine(
-    Eigen::Vector3d const& l, Eigen::Vector2d const& p, double threshold) {
-  return std::abs(l.dot(p.homogeneous())) < threshold;
-}
-
 std::vector<Eigen::Vector2d> GenerateDataset(
-    double p_outlier, std::size_t* p_n_inliers, Eigen::Vector3d* p_line) {
+    Line2d const& line, double p_outlier, std::size_t* p_n_inliers) {
+  // TODO: Expose later.
+  std::size_t n_points = 500;
+  double length = 100.0 / 2.0;
+  double sigma = 0.2;
+  double outlier = sigma * 100.0;
+
   std::default_random_engine generator;
-  std::normal_distribution<double> distribution_normal(0.0, 0.2);
+  std::normal_distribution<double> distribution_normal(0.0, sigma);
   std::uniform_real_distribution<double> distribution_uniform(0.0, 1.0);
   auto sampler_normal = [&]() -> double {
     return distribution_normal(generator);
@@ -25,29 +26,29 @@ std::vector<Eigen::Vector2d> GenerateDataset(
     return distribution_uniform(generator);
   };
 
-  double length = 100.0;
   // Distance from the origin
-  double distance = 44.0;
-  // Line direction
-  Eigen::Vector2d v(1.0, 0.65);
-  v.normalize();
-  // Normal of the line by the right hand rule
-  Eigen::Vector2d n(-v.y(), v.x());
+  double distance = line.d();
+  Eigen::Vector2d n = line.normal();
+  // Line as if the normal was derived by the right hand rule
+  Eigen::Vector2d v(n.y(), -n.x());
   // Offset applied to shift the line from the origin
   Eigen::Vector2d d = n * distance;
-  std::size_t n_points = 500;
   std::vector<Eigen::Vector2d> dataset(n_points);
+
+  // Line centered around d.
+  auto generate_point_on_line = [&]() -> Eigen::Vector2d {
+    double sign = (sampler_uniform() < 0.5) ? 1.0 : -1.0;
+    return d + v * sampler_uniform() * length * sign;
+  };
 
   // Gives a random point along l with noise in the normal direction
   auto generate_noisy = [&]() -> Eigen::Vector2d {
-    return v * length * sampler_uniform() + n * sampler_normal() + d;
+    return generate_point_on_line() + n * sampler_normal();
   };
 
   auto generate_outlier = [&]() -> Eigen::Vector2d {
     double sign = (sampler_uniform() < 0.5) ? 1.0 : -1.0;
-
-    return v * length * sampler_uniform() +
-           n * length * sampler_uniform() * sign + d;
+    return generate_point_on_line() + n * sampler_uniform() * outlier * sign;
   };
 
   std::size_t n_inliers = 0;
@@ -62,7 +63,6 @@ std::vector<Eigen::Vector2d> GenerateDataset(
   }
 
   *p_n_inliers = n_inliers;
-  *p_line = {n.x(), n.y(), -distance};
 
   return dataset;
 }
