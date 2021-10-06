@@ -76,14 +76,19 @@ class Plane {
 
   inline void Normalize() { a_ /= a_.template head<Dim_>().norm(); }
 
-  auto normal() const {
+  //! \brief Point on the plane closest to the origin.
+  inline Eigen::Matrix<Scalar_, Dim_, 1> Origin() const {
+    return normal() * -d();
+  }
+
+  inline auto normal() const {
     // Eigen::VectorBlock<VectorType const, Dim_>
     return a_.template head<Dim_>();
   }
 
-  //! \brief Signed distance from the origin to the plane in the direction of
-  //! the normal. That is, the closest point on the plane to the origin equals:
-  //! plane.normal() * plane.d()
+  //! \brief Negative of the distance from the origin to the plane in the
+  //! direction of the normal. That is, the closest point on the plane to the
+  //! origin equals: plane.normal() * -plane.d()
   Scalar_ const& d() const {
     // Last element.
     return a_(Dim_);
