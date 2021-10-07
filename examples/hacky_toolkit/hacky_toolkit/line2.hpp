@@ -9,15 +9,17 @@ using Line2d = Plane2d;
 using Line2f = Plane2f;
 
 std::vector<Eigen::Vector2d> GenerateDataset(
-    Line2d const& line, double p_inlier, std::size_t* p_n_inliers) {
+    Line2d const& line,
+    std::size_t n_points,
+    double p_inlier,
+    double inlier_noise_sigma,
+    std::size_t* p_n_inliers) {
   // TODO: Expose later.
-  std::size_t n_points = 500;
   double length = 100.0 / 2.0;
-  double sigma = 0.2;
-  double outlier = sigma * 100.0;
+  double max_outlier_distance = inlier_noise_sigma * 100.0;
 
   std::default_random_engine generator;
-  std::normal_distribution<double> distribution_normal(0.0, sigma);
+  std::normal_distribution<double> distribution_normal(0.0, inlier_noise_sigma);
   std::uniform_real_distribution<double> distribution_uniform(0.0, 1.0);
   auto sampler_normal = [&]() -> double {
     return distribution_normal(generator);
@@ -47,7 +49,8 @@ std::vector<Eigen::Vector2d> GenerateDataset(
 
   auto generate_outlier = [&]() -> Eigen::Vector2d {
     double sign = (sampler_uniform() < 0.5) ? 1.0 : -1.0;
-    return generate_point_on_line() + n * sampler_uniform() * outlier * sign;
+    return generate_point_on_line() +
+           n * sampler_uniform() * max_outlier_distance * sign;
   };
 
   std::size_t n_inliers = 0;
