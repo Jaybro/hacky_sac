@@ -2,10 +2,12 @@
 
 #include <Eigen/Dense>
 
-//! \brief This class represents a plane (or hyperplane). The dimension argument
-//! equals that of its ambient space. I.e., a Plane<float, 2> is a line in a 2d
-//! space. A plane is represented by a vector of Dim + 1 parameters that can be
-//! used to obtain the general form of the plane equation: normal.dot(x) + d = 0
+//! \brief A Plane (or hyperplane) is a susbspace of which its dimension is one
+//! less than of its ambient space. The template argument of the dimension of
+//! the plane equals that of its ambient space. I.e., a Plane<float, 2> is a
+//! line in a 2d space. A plane is represented by a vector of Dim + 1 parameters
+//! that can be used to obtain the general form of the plane equation:
+//! normal.dot(x) + d = 0
 template <typename Scalar_, std::size_t Dim_>
 class Plane {
  private:
@@ -23,6 +25,8 @@ class Plane {
     a_(Dim_) = d;
   }
 
+  //! \brief Creates a normalized plane using points. The spatial dimension must
+  //! equal 2 for this constructor.
   template <typename Derived0, typename Derived1>
   inline Plane(
       Eigen::MatrixBase<Derived0> const& x,
@@ -74,6 +78,8 @@ class Plane {
     return Distance(x) < threshold;
   }
 
+  //! \brief Normalizes the plane such that the length of the normal (the first
+  //! Dim parameters) equals 1.
   inline void Normalize() { a_ /= a_.template head<Dim_>().norm(); }
 
   //! \brief Point on the plane closest to the origin.
@@ -110,6 +116,33 @@ class Plane {
  private:
   VectorType a_;
 };
+
+//! \brief Esimates a Plane from Dim_+1 or more points.
+template <typename Scalar_, int Dim_>
+Plane<Scalar_, Dim_> EstimatePlane(
+    std::vector<Eigen::Matrix<Scalar_, Dim_, 1>> const& points,
+    std::vector<bool> const& mask) {
+  using MatrixType = Eigen::Matrix<Scalar_, Dim_ + 1, Dim_ + 1>;
+
+  MatrixType A = MatrixType::Zero();
+
+  for (std::size_t i = 0; i < points.size(); ++i) {
+    if (mask[i]) {
+      // TODO Can't seem to do this at once
+      Eigen::Matrix<Scalar_, Dim_ + 1, 1> v = points[i].homogeneous();
+      A += v * v.transpose();
+    }
+  }
+
+  // For square matrices NoQRPreconditioner is the most optimal.
+  // https://eigen.tuxfamily.org/dox/classEigen_1_1JacobiSVD.html
+  Eigen::JacobiSVD<MatrixType, Eigen::NoQRPreconditioner> d(
+      A, Eigen::ComputeFullV);
+
+  Plane<Scalar_, Dim_> plane(d.matrixV().col(Dim_));
+  plane.Normalize();
+  return plane;
+}
 
 using Plane2d = Plane<double, 2>;
 using Plane3d = Plane<double, 3>;

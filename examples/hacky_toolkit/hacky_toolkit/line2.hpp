@@ -8,29 +8,6 @@
 using Line2d = Plane2d;
 using Line2f = Plane2f;
 
-//! \brief Line estimation from 3 or more points.
-Line2d EstimateLine(
-    std::vector<Eigen::Vector2d> const& points, std::vector<bool> const& mask) {
-  Eigen::Matrix3d A = Eigen::Matrix3d::Zero();
-
-  for (std::size_t i = 0; i < points.size(); ++i) {
-    if (mask[i]) {
-      // TODO Can't seem to do this at once
-      Eigen::Vector3d v = points[i].homogeneous();
-      A += v * v.transpose();
-    }
-  }
-
-  // For square matrices NoQRPreconditioner is the most optimial.
-  // https://eigen.tuxfamily.org/dox/classEigen_1_1JacobiSVD.html
-  Eigen::JacobiSVD<Eigen::Matrix3d, Eigen::NoQRPreconditioner> d(
-      A, Eigen::ComputeFullV);
-
-  Line2d line(d.matrixV().col(2));
-  line.Normalize();
-  return line;
-}
-
 std::vector<Eigen::Vector2d> GenerateDataset(
     Line2d const& line, double p_inlier, std::size_t* p_n_inliers) {
   // TODO: Expose later.

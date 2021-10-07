@@ -45,7 +45,7 @@ int main() {
   std::cout << "inliers ground truth: " << n_inliers << std::endl;
   std::cout << "inliers end: " << result_p.n_inliers << std::endl;
 
-  Line2d refined = EstimateLine(dataset, result_p.mask);
+  Line2d refined = EstimatePlane(dataset, result_p.mask);
 
   std::size_t n_inliers_refined = 0;
   std::size_t n_inliers_ground_truth = 0;
