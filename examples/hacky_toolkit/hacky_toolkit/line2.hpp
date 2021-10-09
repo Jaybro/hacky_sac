@@ -29,27 +29,17 @@ std::vector<Eigen::Vector2d> GenerateDataset(
   };
 
   Eigen::Vector2d n = line.normal();
-  // Line as if the normal was derived by the right hand rule
-  Eigen::Vector2d v(n.y(), -n.x());
-  // Offset applied to shift the line from the origin
-  Eigen::Vector2d d = line.Origin();
   std::vector<Eigen::Vector2d> dataset(n_points);
-
-  // Line centered around d.
-  auto generate_point_on_line = [&]() -> Eigen::Vector2d {
-    double sign = (sampler_uniform() < 0.5) ? 1.0 : -1.0;
-    return d + v * sampler_uniform() * length * sign;
-  };
 
   // Gives a random point along l with noise in the normal direction
   auto generate_noisy = [&]() -> Eigen::Vector2d {
     double noise = sampler_normal();
-    return generate_point_on_line() + n * noise;
+    return line.RandomPoint(length) + n * noise;
   };
 
   auto generate_outlier = [&]() -> Eigen::Vector2d {
     double sign = (sampler_uniform() < 0.5) ? 1.0 : -1.0;
-    return generate_point_on_line() +
+    return line.RandomPoint(length) +
            n * sampler_uniform() * max_outlier_distance * sign;
   };
 

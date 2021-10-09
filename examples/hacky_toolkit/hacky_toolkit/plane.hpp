@@ -7,12 +7,9 @@
 //! the plane equals that of its ambient space. I.e., a Plane<float, 2> is a
 //! line in a 2d space. A plane is represented by a vector of Dim + 1 parameters
 //! that can be used to obtain the general form of the plane equation:
-//! normal.dot(x) + d = 0
+//! a.dot((x, 1)) + d = 0
 template <typename Scalar_, std::size_t Dim_>
 class Plane {
- private:
-  using VectorType = Eigen::Matrix<Scalar_, Dim_ + 1, 1>;
-
  public:
   inline Plane() = default;
 
@@ -71,15 +68,16 @@ class Plane {
     return SignedDistance(x) < Scalar_(0.0);
   }
 
+  //! \brief Returns true if \p x is considered to lie on the plane.
   template <typename Derived>
   inline bool Test(
       Eigen::MatrixBase<Derived> const& x,
-      Scalar_ threshold = std::numeric_limits<Scalar_>::epsilon()) const {
+      Scalar_ threshold = Eigen::NumTraits<Scalar_>::dummy_precision()) const {
     return Distance(x) < threshold;
   }
 
   //! \brief Normalizes the plane such that the length of the normal (the first
-  //! Dim parameters) equals 1.
+  //! Dim parameters of a()) equals 1.
   inline void Normalize() { a_ /= a_.template head<Dim_>().norm(); }
 
   //! \brief Point on the plane closest to the origin.
@@ -87,6 +85,24 @@ class Plane {
     return normal() * -d();
   }
 
+  //! \brief Generates a random point on the unit hypersphere of the subspace
+  //! defined by this plane at a distance of \p distance from the point returned
+  //! by the Origin() method. The plane does not have to be normalized.
+  inline Eigen::Matrix<Scalar_, Dim_, 1> RandomPoint(
+      Scalar_ distance = Scalar_(1.0)) const {
+    // Perturb the normal with some noise.
+    // What are the odds that the added noise equals 0?
+    Eigen::Matrix<Scalar_, Dim_, 1> v =
+        normal() + Eigen::Matrix<Scalar_, Dim_, 1>::Random();
+    // Apply Gram-Schmidt process to get an orthogonal vector. Ie, subtract the
+    // projection of v on the normal from v.
+    return (v - normal() * normal().dot(v) / normal().squaredNorm())
+                   .normalized() *
+               distance +
+           Origin();
+  }
+
+  //! \brief Plane of the normal.
   inline auto normal() const {
     // Eigen::VectorBlock<VectorType const, Dim_>
     return a_.template head<Dim_>();
@@ -95,15 +111,11 @@ class Plane {
   //! \brief Negative of the distance from the origin to the plane in the
   //! direction of the normal. That is, the closest point on the plane to the
   //! origin equals: plane.normal() * -plane.d()
-  Scalar_ const& d() const {
-    // Last element.
-    return a_(Dim_);
-  }
+  Scalar_ const& d() const { return a_(Dim_); }
 
-  auto const& a() const {
-    // VectorType
-    return a_;
-  }
+  //! \brief The parameters of the plane. They describe the General form of the
+  //! plane equation: a.dot((x, 1)) = 0
+  auto const& a() const { return a_; }
 
   //! \brief Generates a Plane with a random normal at a distance somewhere in
   //! the range of [-max_distance:max_distance].
@@ -114,7 +126,7 @@ class Plane {
   }
 
  private:
-  VectorType a_;
+  Eigen::Matrix<Scalar_, Dim_ + 1, 1> a_;
 };
 
 //! \brief Esimates a Plane from Dim_+1 or more points.

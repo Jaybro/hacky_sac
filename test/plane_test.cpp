@@ -25,9 +25,15 @@ TEST(PlaneTest, Random) {
   double max_distance = 100.0;
 
   Plane2d plane = Plane2d::Random(max_distance);
+  Eigen::Vector2d point = plane.RandomPoint(max_distance);
 
+  // Random plane.
   EXPECT_LE(std::abs(plane.d()), max_distance);
   EXPECT_DOUBLE_EQ(1.0, plane.normal().squaredNorm());
+
+  // Random point on plane.
+  EXPECT_TRUE(plane.Test(point));
+  EXPECT_DOUBLE_EQ(max_distance, (point - plane.Origin()).norm());
 }
 
 TEST(PlaneTest, Tests) {
