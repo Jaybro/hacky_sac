@@ -2,6 +2,8 @@
 
 #include <Eigen/Dense>
 
+namespace hacky_toolkit {
+
 //! \brief A Plane (or hyperplane) is a susbspace of which its dimension is one
 //! less than of its ambient space. The template argument of the dimension of
 //! the plane equals that of its ambient space. I.e., a Plane<float, 2> is a
@@ -131,35 +133,10 @@ class Plane {
   Eigen::Matrix<Scalar_, Dim_ + 1, 1> a_;
 };
 
-//! \brief Esimates a Plane from Dim_+1 or more points.
-template <typename Scalar_, int Dim_>
-Plane<Scalar_, Dim_> EstimatePlane(
-    std::vector<Eigen::Matrix<Scalar_, Dim_, 1>> const& points,
-    std::vector<bool> const& mask) {
-  using MatrixType = Eigen::Matrix<Scalar_, Dim_ + 1, Dim_ + 1>;
-
-  MatrixType A = MatrixType::Zero();
-
-  for (std::size_t i = 0; i < points.size(); ++i) {
-    if (mask[i]) {
-      // TODO Can't seem to do this at once
-      Eigen::Matrix<Scalar_, Dim_ + 1, 1> v = points[i].homogeneous();
-      A += v * v.transpose();
-    }
-  }
-
-  // For square matrices NoQRPreconditioner is the most optimal.
-  // https://eigen.tuxfamily.org/dox/classEigen_1_1JacobiSVD.html
-  Eigen::JacobiSVD<MatrixType, Eigen::NoQRPreconditioner> d(
-      A, Eigen::ComputeFullV);
-
-  Plane<Scalar_, Dim_> plane(d.matrixV().col(Dim_));
-  plane.Normalize();
-  return plane;
-}
-
 using Plane2d = Plane<double, 2>;
 using Plane3d = Plane<double, 3>;
 
 using Plane2f = Plane<float, 2>;
 using Plane3f = Plane<float, 3>;
+
+}  // namespace hacky_toolkit

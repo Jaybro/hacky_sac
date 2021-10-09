@@ -2,6 +2,8 @@
 
 #include <hacky_toolkit/plane.hpp>
 
+using namespace hacky_toolkit;
+
 TEST(PlaneTest, Construction) {
   Eigen::Vector2d a(0.0, 1.0);
   Eigen::Vector2d b(4.0, 1.0);

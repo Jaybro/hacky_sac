@@ -1,7 +1,9 @@
 #include <hacky_sac/ransac.hpp>
-#include <hacky_toolkit/line2.hpp>
+#include <hacky_toolkit/plane_utils.hpp>
 #include <iomanip>
 #include <iostream>
+
+using Line2d = hacky_toolkit::Plane2d;
 
 void Print(
     Line2d const& original,
@@ -70,7 +72,7 @@ int main() {
   double inlier_noise_sigma = 0.2;
   double inlier_max_radius = 50.0;
 
-  auto dataset = GenerateDataset(
+  auto dataset = hacky_toolkit::GenerateDataset(
       original,
       n_points,
       p_inlier_ground_truth,
@@ -86,8 +88,8 @@ int main() {
   double inlier_threshold = inlier_noise_sigma * 2.0;
 
   auto f_model_estimator =
-      [&dataset](std::vector<std::size_t> const& samples) -> Plane2d {
-    return Plane2d(dataset[samples[0]], dataset[samples[1]]);
+      [&dataset](std::vector<std::size_t> const& samples) -> Line2d {
+    return Line2d(dataset[samples[0]], dataset[samples[1]]);
   };
 
   auto f_sample_tester = [&dataset, &inlier_threshold](
@@ -98,10 +100,11 @@ int main() {
   std::size_t n_samples = 2;
   hacky_sac::ProbabilisticIterationAdapter adapter(
       0.999, p_inlier_a_priori, n_samples, dataset.size(), 0);
+
   auto result = hacky_sac::EstimateModel<Line2d>(
       n_samples, dataset.size(), adapter, f_model_estimator, f_sample_tester);
 
-  Line2d refined = EstimatePlane(dataset, result.mask);
+  Line2d refined = hacky_toolkit::EstimatePlane(dataset, result.mask);
 
   Print(
       original,
