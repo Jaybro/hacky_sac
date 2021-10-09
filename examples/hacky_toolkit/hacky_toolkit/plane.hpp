@@ -8,8 +8,10 @@
 //! line in a 2d space. A plane is represented by a vector of Dim + 1 parameters
 //! that can be used to obtain the general form of the plane equation:
 //! a.dot((x, 1)) + d = 0
-template <typename Scalar_, std::size_t Dim_>
+template <typename Scalar_, int Dim_>
 class Plane {
+  static_assert(Dim_ > 0, "DYNAMIC_DIMENSION_NOT_SUPPORTED");
+
  public:
   inline Plane() = default;
 
