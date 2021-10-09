@@ -68,12 +68,14 @@ int main() {
   double p_inlier_ground_truth = 0.6;
   double p_inlier_a_priori = 0.4;
   double inlier_noise_sigma = 0.2;
+  double inlier_max_radius = 50.0;
 
   auto dataset = GenerateDataset(
       original,
       n_points,
       p_inlier_ground_truth,
       inlier_noise_sigma,
+      inlier_max_radius,
       &n_inliers_ground_truth);
 
   // Since the dataset is randomly generated, the final inlier probablity could
