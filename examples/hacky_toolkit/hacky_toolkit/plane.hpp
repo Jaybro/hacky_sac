@@ -27,7 +27,8 @@ class Plane {
   }
 
   //! \brief Creates a normalized plane using two points. The spatial dimension
-  //! must equal 2 for this constructor.
+  //! of the Plane must equal 2 when using this constructor. Input points can be
+  //! of dimension 2 or 3.
   template <typename Derived0, typename Derived1>
   inline Plane(
       Eigen::MatrixBase<Derived0> const& x,
@@ -41,6 +42,33 @@ class Plane {
       a_ = x.homogeneous().cross(y.homogeneous());
     } else {
       a_ = x.cross(y);
+    }
+    Normalize();
+  }
+
+  //! \brief Creates a normalized plane using three points. The spatial
+  //! dimension of the Plane must equal 3 when using this constructor. Input
+  //! points can be of dimension 3 or 4.
+  template <typename Derived0, typename Derived1, typename Derived2>
+  inline Plane(
+      Eigen::MatrixBase<Derived0> const& x,
+      Eigen::MatrixBase<Derived1> const& y,
+      Eigen::MatrixBase<Derived2> const& z) {
+    static_assert(Dim_ == 3);
+    static_assert(
+        Derived0::SizeAtCompileTime == Dim_ ||
+        Derived0::SizeAtCompileTime == Dim_ + 1);
+    static_assert(
+        Derived0::SizeAtCompileTime == Derived1::SizeAtCompileTime &&
+        Derived1::SizeAtCompileTime == Derived2::SizeAtCompileTime);
+    if constexpr (Derived0::SizeAtCompileTime == Dim_) {
+      a_.template head<3>() = (y - x).cross(z - x);
+      a_(Dim_) = -x.dot(a_.template head<3>());
+    } else {
+      auto xn = x.hnormalized().eval();
+      a_.template head<3>() =
+          (y.hnormalized() - xn).cross(z.hnormalized() - xn);
+      a_(Dim_) = -xn.dot(a_.template head<3>());
     }
     Normalize();
   }

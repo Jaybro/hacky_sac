@@ -4,7 +4,7 @@
 
 using namespace hacky_toolkit;
 
-TEST(PlaneTest, Construction) {
+TEST(PlaneTest, Construction2d) {
   Eigen::Vector2d a(0.0, 1.0);
   Eigen::Vector2d b(4.0, 1.0);
 
@@ -16,9 +16,29 @@ TEST(PlaneTest, Construction) {
   }
 
   {
-    Plane2d plane(b, a);
+    Plane2d plane(b.homogeneous(), a.homogeneous());
 
     EXPECT_TRUE(plane.normal().isApprox(Eigen::Vector2d::UnitY() * -1.0));
+    EXPECT_DOUBLE_EQ(1.0, plane.d());
+  }
+}
+
+TEST(PlaneTest, Construction3d) {
+  Eigen::Vector3d a(0.0, 0.0, 1.0);
+  Eigen::Vector3d b(2.0, 0.0, 1.0);
+  Eigen::Vector3d c(0.0, 2.0, 1.0);
+
+  {
+    Plane3d plane(a, b, c);
+
+    EXPECT_TRUE(plane.normal().isApprox(Eigen::Vector3d::UnitZ()));
+    EXPECT_DOUBLE_EQ(1.0, -plane.d());
+  }
+
+  {
+    Plane3d plane(a.homogeneous(), c.homogeneous(), b.homogeneous());
+
+    EXPECT_TRUE(plane.normal().isApprox(Eigen::Vector3d::UnitZ() * -1.0));
     EXPECT_DOUBLE_EQ(1.0, plane.d());
   }
 }
