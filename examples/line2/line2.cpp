@@ -12,7 +12,7 @@ void Print(
     double p_inlier_a_priori,
     double inlier_threshold,
     std::vector<Eigen::Vector2d> const& dataset,
-    hacky_sac::ProbabilisticIterationAdapter const& adapter,
+    hacky_sac::ProbabilisticIterationAdaptor const& adaptor,
     hacky_sac::EstimateModelResult<Line2d> const& result,
     Line2d const& refined) {
   // The probability of an inlier according to RANSAC.
@@ -30,7 +30,7 @@ void Print(
   std::cout << std::endl;
 
   std::cout << "RANSAC iterations: " << std::endl;
-  std::cout << std::setw(width) << "  A priori" << adapter.Iterations()
+  std::cout << std::setw(width) << "  A priori" << adaptor.Iterations()
             << std::endl;
   std::cout << std::setw(width) << "  A posteriori" << result.n_iterations
             << std::endl;
@@ -98,11 +98,11 @@ int main() {
   };
 
   std::size_t n_samples = 2;
-  hacky_sac::ProbabilisticIterationAdapter adapter(
+  hacky_sac::ProbabilisticIterationAdaptor adaptor(
       0.999, p_inlier_a_priori, n_samples, dataset.size(), 0);
 
   auto result = hacky_sac::EstimateModel<Line2d>(
-      n_samples, dataset.size(), adapter, f_model_estimator, f_sample_tester);
+      n_samples, dataset.size(), adaptor, f_model_estimator, f_sample_tester);
 
   Line2d refined = hacky_toolkit::EstimatePlane(dataset, result.mask);
 
@@ -113,7 +113,7 @@ int main() {
       p_inlier_a_priori,
       inlier_threshold,
       dataset,
-      adapter,
+      adaptor,
       result,
       refined);
 

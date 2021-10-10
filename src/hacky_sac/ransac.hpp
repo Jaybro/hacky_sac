@@ -9,24 +9,23 @@
 
 #include <cassert>
 #include <cmath>
-#include <functional>
 #include <random>
 
 namespace hacky_sac {
 
 //! \brief Sets the amount of RANSAC iterations to a fixed number.
-class FixedIterationAdapter {
+class FixedIterationAdaptor {
  public:
-  //! \brief Constructs FixedIterationAdapter with a set amount of itertations.
+  //! \brief Constructs FixedIterationAdaptor with a set amount of itertations.
   //! \param iterations The amount of iterations that RANSAC will run.
-  constexpr FixedIterationAdapter(std::size_t iterations)
+  constexpr FixedIterationAdaptor(std::size_t iterations)
       : iterations_(iterations) {}
 
   //! \brief Returns the iterations set during the construction of the
-  //! FixedIterationAdapter.
+  //! FixedIterationAdaptor.
   inline constexpr std::size_t Iterations() const { return iterations_; }
   //! \brief Returns the iterations set during the construction of the
-  //! FixedIterationAdapter. This means the input argument is ignored.
+  //! FixedIterationAdaptor. This means the input argument is ignored.
   inline constexpr std::size_t Iterations(
       [[maybe_unused]] std::size_t n_inliers) const {
     return iterations_;
@@ -39,9 +38,9 @@ class FixedIterationAdapter {
 //! \brief Sets the amount of RANSAC iterations based on probabilities.
 //! \details See https://en.wikipedia.org/wiki/Random_sample_consensus for more
 //! details.
-class ProbabilisticIterationAdapter {
+class ProbabilisticIterationAdaptor {
  public:
-  //! \brief Constructs ProbabilisticIterationAdapter using probabilities.
+  //! \brief Constructs ProbabilisticIterationAdaptor using probabilities.
   //! \param p_result The probability that the final estimated model will be
   //! correct. Typically set to 99.9.
   //! \param p_inlier The probability that a drawn sample is part of the
@@ -51,7 +50,7 @@ class ProbabilisticIterationAdapter {
   //! \param n_datums The number of datum from which to sample.
   //! \param n_iteration_stddevs The number of iteration standard deviations
   //! added to the amount of iterations.
-  ProbabilisticIterationAdapter(
+  ProbabilisticIterationAdaptor(
       double p_result,
       double p_inlier,
       std::size_t n_samples,
@@ -65,7 +64,7 @@ class ProbabilisticIterationAdapter {
 
   //! \brief Returns the minimum amount of iterations needed to obtain a model.
   inline std::size_t Iterations() const {
-    return ProbabilisticIterationAdapter::Iterations(
+    return ProbabilisticIterationAdaptor::Iterations(
         p_result_, p_inlier_, n_samples_, n_iteration_stddevs_);
   }
 
@@ -75,7 +74,7 @@ class ProbabilisticIterationAdapter {
   inline std::size_t Iterations(std::size_t n_inliers) const {
     double p_inlier =
         static_cast<double>(n_inliers) / static_cast<double>(n_datums_);
-    return ProbabilisticIterationAdapter::Iterations(
+    return ProbabilisticIterationAdaptor::Iterations(
         p_result_, p_inlier, n_samples_, n_iteration_stddevs_);
   }
 
