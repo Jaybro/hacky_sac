@@ -135,7 +135,7 @@ struct EstimateModelResult {
 
 //! \brief Estimates a model using RANSAC.
 //! \tparam Model Output model.
-//! \tparam IterationAdapter Influences the iteration behavior of RANSAC.
+//! \tparam IterationAdaptor Influences the iteration behavior of RANSAC.
 //! \tparam ModelEstimator The function, functor, etc., type used for model
 //! estimation. Expected interface is
 //! \code{.cpp}
@@ -148,19 +148,19 @@ struct EstimateModelResult {
 //! \endcode
 //! \param n_samples The number of samples needed to estimate the model.
 //! \param n_datums The number of datum from which to sample.
-//! \param adapter IterationAdapter object for influencing the iteration
+//! \param adapter IterationAdaptor object for influencing the iteration
 //! behavior of RANSAC.
 //! \param f_model_estimator Function used for model estimation.
 //! \param f_sample_tester Function used for testing a sample (inlier = true).
 template <
     typename Model,
-    typename IterationAdapter,
+    typename IterationAdaptor,
     typename ModelEstimator,
     typename SampleTester>
 EstimateModelResult<Model> EstimateModel(
     std::size_t n_samples,
     std::size_t n_datums,
-    IterationAdapter adapter,
+    IterationAdaptor adapter,
     ModelEstimator f_model_estimator,
     SampleTester f_sample_tester) {
   assert(n_samples > 0);
