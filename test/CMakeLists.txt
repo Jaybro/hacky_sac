@@ -14,6 +14,7 @@ include_directories(${CMAKE_CURRENT_LIST_DIR})
 
 set(TEST_TARGET_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/plane_test.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/ransac_test.cpp
 )
 
 target_sources(${TEST_TARGET_NAME} PRIVATE ${TEST_TARGET_SOURCES})
