@@ -26,8 +26,8 @@ class Plane {
     a_(Dim_) = d;
   }
 
-  //! \brief Creates a normalized plane using points. The spatial dimension must
-  //! equal 2 for this constructor.
+  //! \brief Creates a normalized plane using two points. The spatial dimension
+  //! must equal 2 for this constructor.
   template <typename Derived0, typename Derived1>
   inline Plane(
       Eigen::MatrixBase<Derived0> const& x,
@@ -72,7 +72,8 @@ class Plane {
     return SignedDistance(x) < Scalar_(0.0);
   }
 
-  //! \brief Returns true if \p x is considered to lie on the plane.
+  //! \brief Tests is a point is considered to lie on the plane.
+  //! \returns true if \p x is on the plane.
   template <typename Derived>
   inline bool Test(
       Eigen::MatrixBase<Derived> const& x,
@@ -92,6 +93,7 @@ class Plane {
   //! \brief Generates a random point on the unit hypersphere of the subspace
   //! defined by this plane at a distance of \p distance from the point returned
   //! by the Origin() method. The plane does not have to be normalized.
+  //! \returns A random point on the plane.
   inline Eigen::Matrix<Scalar_, Dim_, 1> RandomPoint(
       Scalar_ distance = Scalar_(1.0)) const {
     // Perturb the normal with some noise.
@@ -106,15 +108,21 @@ class Plane {
            Origin();
   }
 
-  //! \brief Plane of the normal.
+  //! \brief The orientation of the plane is defined by its normal. Not
+  //! guaranteed to be normalized.
+  //! \returns The plane normal.
   inline auto normal() const {
     // Eigen::VectorBlock<VectorType const, Dim_>
     return a_.template head<Dim_>();
   }
 
-  //! \brief Negative of the distance from the origin to the plane in the
+  //! \brief The negative of the distance from the origin to the plane in the
   //! direction of the normal. That is, the closest point on the plane to the
-  //! origin equals: plane.normal() * -plane.d()
+  //! origin equals:
+  //! \code
+  //! plane.normal() * -plane.d()
+  //! \endcode
+  //! \returns Negative distance from the origin to the plane.
   Scalar_ const& d() const { return a_(Dim_); }
 
   //! \brief The parameters of the plane. They describe the General form of the

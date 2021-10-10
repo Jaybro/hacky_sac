@@ -7,7 +7,8 @@
 
 namespace hacky_toolkit {
 
-//! \brief Esimates a Plane from Dim_+1 or more points.
+//! \brief Least squares plane estimation using Dim_+1 or more input points..
+//! \returns A plane that fits the input points.
 template <typename Scalar_, int Dim_>
 Plane<Scalar_, Dim_> EstimatePlane(
     std::vector<Eigen::Matrix<Scalar_, Dim_, 1>> const& points,
