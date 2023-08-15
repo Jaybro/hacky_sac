@@ -18,27 +18,20 @@ jobs:
           echo "${GITHUB_WORKSPACE//'\'/'/'}/install/bin" >> $GITHUB_PATH
 
       - name: Clone HackySAC
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+
+      - name: Clone Google Test
+        uses: actions/checkout@v3
+        with:
+          repository: google/googletest
+          ref: release-1.12.1
+          path: googletest
 
       - name: Clone Eigen
         shell: bash
         run: |
           git clone https://gitlab.com/libeigen/eigen.git --branch 3.3.9 --depth 1 || exit 1
           cd eigen && git switch -c 3.3.9
-
-      - name: Clone Google Test
-        uses: actions/checkout@v2
-        with:
-          repository: google/googletest
-          ref: release-1.10.0
-          path: googletest
-
-      - name: CMake Eigen
-        uses: Jaybro/action-cmake@v1
-        with:
-          cmake-source-dir: eigen
-          cmake-build-dir: eigen/build
-          cmake-install: true
 
       - name: CMake Google Test
         uses: Jaybro/action-cmake@v1
@@ -48,6 +41,13 @@ jobs:
           # GTest is build statically but the CMake + Visual Studio combination wants to link against it as being dynamic.
           # https://github.com/google/googletest/tree/release-1.8.1/googletest#visual-studio-dynamic-vs-static-runtimes
           cmake-configure-flags: -Dgtest_force_shared_crt=ON
+          cmake-install: true
+
+      - name: CMake Eigen
+        uses: Jaybro/action-cmake@v1
+        with:
+          cmake-source-dir: eigen
+          cmake-build-dir: eigen/build
           cmake-install: true
 
       - name: CMake HackySAC
