@@ -6,6 +6,8 @@
 using namespace hacky_sac;
 using namespace hacky_toolkit;
 
+using Plane3d = Eigen::Hyperplane<double, 3>;
+
 TEST(RansacTest, FixedIterationAdaptor) {
   std::size_t iterations = 100;
   FixedIterationAdaptor adaptor(iterations);
@@ -27,7 +29,7 @@ TEST(RansacTest, ProbabilisticIterationAdaptor) {
 
 TEST(RansacTest, EstimateModel) {
   std::size_t n_inliers_ground_truth;
-  Plane3d original = Plane3d::Random();
+  Plane3d original = hacky_toolkit::RandomHyperplane<double, 3>();
   std::size_t n_points = 100;
   double p_inlier_ground_truth = 0.95;
   double p_inlier_a_priori = 0.2;
@@ -44,7 +46,7 @@ TEST(RansacTest, EstimateModel) {
 
   auto f_model_estimator =
       [&dataset](std::vector<std::size_t> const& samples) -> Plane3d {
-    return Plane3d(
+    return Plane3d::Through(
         dataset[samples[0]], dataset[samples[1]], dataset[samples[2]]);
   };
 
@@ -52,7 +54,7 @@ TEST(RansacTest, EstimateModel) {
 
   auto f_sample_tester = [&dataset, &inlier_threshold](
                              Plane3d const& model, std::size_t index) -> bool {
-    return model.Test(dataset[index], inlier_threshold);
+    return TestPointOnHyperplane(model, dataset[index], inlier_threshold);
   };
 
   std::size_t n_samples = 3;
