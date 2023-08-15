@@ -3,7 +3,7 @@
 #include <iomanip>
 #include <iostream>
 
-using Line2d = hacky_toolkit::Plane2d;
+using Line2d = Eigen::Hyperplane<double, 2>;
 
 void Print(
     Line2d const& original,
@@ -15,9 +15,24 @@ void Print(
     hacky_sac::ProbabilisticIterationAdaptor const& adaptor,
     hacky_sac::EstimateModelResult<Line2d> const& result,
     Line2d const& refined) {
+  std::size_t n_inliers_original = 0;
+  std::size_t n_inliers_refined = 0;
+  for (auto const& p : dataset) {
+    if (hacky_toolkit::TestPointOnHyperplane(original, p, inlier_threshold)) {
+      n_inliers_original++;
+    }
+
+    if (hacky_toolkit::TestPointOnHyperplane(refined, p, inlier_threshold)) {
+      n_inliers_refined++;
+    }
+  }
+
   // The probability of an inlier according to RANSAC.
   double p_inlier_a_posteriori = static_cast<double>(result.n_inliers) /
                                  static_cast<double>(result.mask.size());
+  double p_inlier_a_posteriori_refined =
+      static_cast<double>(n_inliers_refined) /
+      static_cast<double>(result.mask.size());
 
   int width = 24;
   std::cout << "Probability inlier: " << std::left << std::endl;
@@ -27,6 +42,8 @@ void Print(
             << std::endl;
   std::cout << std::setw(width) << "  A posteriori" << p_inlier_a_posteriori
             << std::endl;
+  std::cout << std::setw(width) << "  A posteriori refined"
+            << p_inlier_a_posteriori_refined << std::endl;
   std::cout << std::endl;
 
   std::cout << "RANSAC iterations: " << std::endl;
@@ -35,18 +52,6 @@ void Print(
   std::cout << std::setw(width) << "  A posteriori" << result.n_iterations
             << std::endl;
   std::cout << std::endl;
-
-  std::size_t n_inliers_original = 0;
-  std::size_t n_inliers_refined = 0;
-  for (auto const& p : dataset) {
-    if (original.Test(p, inlier_threshold)) {
-      n_inliers_original++;
-    }
-
-    if (refined.Test(p, inlier_threshold)) {
-      n_inliers_refined++;
-    }
-  }
 
   std::cout << std::setw(width) << "Dataset size: " << dataset.size()
             << std::endl;
@@ -65,7 +70,7 @@ void Print(
 
 int main() {
   std::size_t n_inliers_ground_truth;
-  Line2d original = Line2d::Random(50.0);
+  Line2d original = hacky_toolkit::RandomHyperplane<double, 2>(50.0);
   std::size_t n_points = 600;
   double p_inlier_ground_truth = 0.6;
   double p_inlier_a_priori = 0.4;
@@ -89,12 +94,13 @@ int main() {
 
   auto f_model_estimator =
       [&dataset](std::vector<std::size_t> const& samples) -> Line2d {
-    return Line2d(dataset[samples[0]], dataset[samples[1]]);
+    return Line2d::Through(dataset[samples[0]], dataset[samples[1]]);
   };
 
   auto f_sample_tester = [&dataset, &inlier_threshold](
                              Line2d const& model, std::size_t index) -> bool {
-    return model.Test(dataset[index], inlier_threshold);
+    return hacky_toolkit::TestPointOnHyperplane(
+        model, dataset[index], inlier_threshold);
   };
 
   std::size_t n_samples = 2;
